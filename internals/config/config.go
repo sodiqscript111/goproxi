@@ -20,7 +20,7 @@ type Route struct {
 }
 
 // Load reads and parses the goproxi.toml config file
-func Load() (Config, error) {
+func LoadConfig() (Config, error) {
 	viper.SetConfigName("goproxi")
 	viper.SetConfigType("toml")
 	viper.AddConfigPath(".")
