@@ -25,9 +25,9 @@ type Route struct {
 
 func main() {
 	// Load config file
-	viper.SetConfigName("goproxi") // file name without extension
+	viper.SetConfigName("goproxi")
 	viper.SetConfigType("toml")
-	viper.AddConfigPath(".") // look in current dir
+	viper.AddConfigPath(".")
 
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalf("Error reading config file: %v", err)
@@ -45,6 +45,7 @@ func main() {
 	}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+
 		log.Printf("Incoming request: %s %s", r.Method, r.URL.Path)
 
 		for prefix, proxy := range handlers {
