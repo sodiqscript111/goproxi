@@ -1,0 +1,19 @@
+# goproxi.toml
+# Main proxy configuration
+
+[proxy]
+bind = "8080"         # Port goproxi will listen on
+use_gzip = true       # Enable gzip compression (optional)
+
+# Define routes
+[[routes]]
+prefix = "/httpbin"
+target = "https://httpbin.org"
+
+[[routes]]
+prefix = "/golang"
+target = "https://golang.org"
+
+[[routes]]
+prefix = "/github"
+target = "https://github.com"
