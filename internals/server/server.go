@@ -1,11 +1,16 @@
 package server
 
 import (
+	"context"
 	"goproxi/internals/config"
 	"goproxi/internals/proxy"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 )
 
 func Start() {
@@ -21,7 +26,9 @@ func Start() {
 		handlers[route.Prefix] = proxy.NewProxy(route.Target)
 	}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Incoming request: %s %s", r.Method, r.URL.Path)
 
 		for prefix, p := range handlers {
@@ -39,6 +46,36 @@ func Start() {
 		http.NotFound(w, r)
 	})
 
-	log.Printf("Starting proxy on :%s", cfg.Proxy.Bind)
-	log.Fatal(http.ListenAndServe(":"+cfg.Proxy.Bind, nil))
+	// Define server with timeouts
+	srv := &http.Server{
+		Addr:         ":" + cfg.Proxy.Bind,
+		Handler:      mux,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
+	// Run server in a goroutine
+	go func() {
+		log.Printf("Starting proxy on :%s", cfg.Proxy.Bind)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Server error: %v", err)
+		}
+	}()
+
+	// Wait for shutdown signal
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+	<-stop // block until signal
+
+	log.Println("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
+	}
+
+	log.Println("Server exited cleanly")
 }
