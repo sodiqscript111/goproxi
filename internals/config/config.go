@@ -4,7 +4,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Config structs
 type Config struct {
 	Proxy  ProxyConfig `mapstructure:"proxy"`
 	Routes []Route     `mapstructure:"routes"`
@@ -19,7 +18,6 @@ type Route struct {
 	Target string `mapstructure:"target"`
 }
 
-// Load reads and parses the goproxi.toml config file
 func LoadConfig() (Config, error) {
 	viper.SetConfigName("goproxi")
 	viper.SetConfigType("toml")

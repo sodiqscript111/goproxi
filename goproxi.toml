@@ -1,9 +1,9 @@
-# goproxi.toml
-# Main proxy configuration
+# Edit to fit your needs
+
 
 [proxy]
-bind = "8080"         # Port goproxi will listen on
-use_gzip = true       # Enable gzip compression (optional)
+bind = "8080"
+use_gzip = true
 
 # Define routes
 [[routes]]

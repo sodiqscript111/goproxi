@@ -6,7 +6,6 @@ import (
 	"net/url"
 )
 
-// NewProxy creates a reverse proxy for a target URL
 func NewProxy(target string) *httputil.ReverseProxy {
 	targetURL, err := url.Parse(target)
 	if err != nil {

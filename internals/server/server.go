@@ -14,7 +14,7 @@ import (
 )
 
 func Start() {
-	// Load config
+
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal("There was an error", err.Error())
@@ -33,7 +33,6 @@ func Start() {
 
 		for prefix, p := range handlers {
 			if strings.HasPrefix(r.URL.Path, prefix) {
-				// Trim prefix before forwarding
 				r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
 				if r.URL.Path == "" {
 					r.URL.Path = "/"
@@ -46,7 +45,6 @@ func Start() {
 		http.NotFound(w, r)
 	})
 
-	// Define server with timeouts
 	srv := &http.Server{
 		Addr:         ":" + cfg.Proxy.Bind,
 		Handler:      mux,
@@ -55,7 +53,6 @@ func Start() {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	// Run server in a goroutine
 	go func() {
 		log.Printf("Starting proxy on :%s", cfg.Proxy.Bind)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -63,13 +60,12 @@ func Start() {
 		}
 	}()
 
-	// Wait for shutdown signal
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
-	<-stop // block until signal
+	<-stop
 
-	log.Println("Shutting down server...")
+	log.Println("Shutting down server")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
